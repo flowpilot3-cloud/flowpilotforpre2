@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فورم الطلب — ZR Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1c1c2a;
+    --surface3: #252535;
+    --border: #2e2e45;
+    --border2: #3d3d5c;
+    --gold: #c9a227;
+    --gold2: #e6b93d;
+    --gold-glow: rgba(201,162,39,0.15);
+    --gold-glow2: rgba(201,162,39,0.08);
+    --red: #e04444;
+    --green: #22c55e;
+    --text: #f0eff8;
+    --text2: #9898bb;
+    --text3: #5a5a7a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Tajawal',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ─── خلفية ─── */
+  .bg-layer {
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 0%, rgba(201,162,39,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 85% 100%, rgba(100,80,200,0.05) 0%, transparent 55%);
+  }
+  .grid-layer {
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(201,162,39,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,162,39,0.04) 1px, transparent 1px);
+    background-size:48px 48px;
+  }
+
+  /* ─── كونتينر ─── */
+  .container {
+    position:relative; z-index:1;
+    max-width:820px; margin:0 auto;
+    padding:40px 20px 80px;
+  }
+
+  /* ─── هيدر ─── */
+  .header {
+    text-align:center; margin-bottom:48px;
+    animation:fadeDown .9s cubic-bezier(.16,1,.3,1) both;
+  }
+  .logo-wrap {
+    display:inline-flex; align-items:center; gap:14px;
+    background:linear-gradient(135deg, var(--surface), var(--surface2));
+    border:1px solid var(--border2);
+    border-radius:100px; padding:12px 30px;
+    margin-bottom:30px;
+    box-shadow:0 0 40px var(--gold-glow2);
+  }
+  .logo-zr {
+    font-size:22px; font-weight:900; letter-spacing:4px; color:var(--gold2);
+    font-style:italic;
+  }
+  .logo-dot {
+    width:8px; height:8px; border-radius:50%; background:var(--gold);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  h1 { font-size:clamp(30px,5.5vw,50px); font-weight:900; line-height:1.2; margin-bottom:14px; }
+  h1 em { font-style:normal; color:var(--gold2); }
+  .subtitle { color:var(--text2); font-size:15px; line-height:1.8; }
+
+  /* ─── progress ─── */
+  .progress {
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:44px; gap:0;
+    animation:fadeUp .8s .15s both;
+  }
+  .step { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .step-num {
+    width:42px; height:42px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:15px;
+    border:2px solid var(--border2); background:var(--surface2);
+    color:var(--text3); transition:all .4s;
+  }
+  .step.active .step-num {
+    border-color:var(--gold); background:var(--gold);
+    color:var(--bg); box-shadow:0 0 24px var(--gold-glow);
+  }
+  .step.done .step-num { border-color:var(--green); background:var(--green); color:#fff; }
+  .step-label { font-size:11px; color:var(--text3); font-weight:600; letter-spacing:.5px; white-space:nowrap; }
+  .step.active .step-label { color:var(--gold); }
+  .step.done .step-label { color:var(--green); }
+  .step-line { width:70px; height:2px; background:var(--border); margin-bottom:22px; transition:background .4s; }
+  .step-line.done { background:var(--green); }
+
+  /* ─── loading ─── */
+  .loading-overlay {
+    position:fixed; inset:0; z-index:200;
+    background:rgba(10,10,15,0.92);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;
+  }
+  .loading-overlay.hidden { display:none; }
+  .spinner {
+    width:54px; height:54px;
+    border:3px solid var(--border2);
+    border-top-color:var(--gold);
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .loading-text { color:var(--text2); font-size:14px; font-weight:600; }
+
+  /* ─── error ─── */
+  .error-banner {
+    display:none; background:rgba(224,68,68,0.1); border:1.5px solid var(--red);
+    border-radius:14px; padding:18px 22px; margin-bottom:22px;
+    color:var(--red); font-size:14px; font-weight:600; text-align:center;
+  }
+  .error-banner.show { display:block; }
+  .retry-btn {
+    margin-top:10px; padding:9px 22px; background:var(--red); color:white;
+    border:none; border-radius:9px; font-family:'Tajawal',sans-serif;
+    font-size:13px; font-weight:700; cursor:pointer; transition:.2s;
+  }
+  .retry-btn:hover { opacity:.8; }
+
+  /* ─── كارد ─── */
+  .form-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:26px; overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.55);
+    animation:fadeUp .9s .25s both;
+  }
+  .section { display:none; padding:42px; animation:sectionIn .45s ease; }
+  .section.active { display:block; }
+  @keyframes sectionIn { from{opacity:0;transform:translateX(-18px)} to{opacity:1;transform:translateX(0)} }
+
+  .section-header {
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:34px; padding-bottom:22px;
+    border-bottom:1px solid var(--border);
+  }
+  .section-icon {
+    width:52px; height:52px; flex-shrink:0;
+    background:var(--gold-glow); border:1px solid rgba(201,162,39,.3);
+    border-radius:14px; display:flex; align-items:center; justify-content:center;
+    font-size:24px;
+  }
+  .section-title { font-size:20px; font-weight:800; }
+  .section-desc { color:var(--text2); font-size:13px; margin-top:3px; }
+
+  /* ─── فورم ─── */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .form-group { display:flex; flex-direction:column; gap:9px; }
+  .form-group.full { grid-column:1/-1; }
+  label { font-size:12px; font-weight:700; color:var(--text2); letter-spacing:.8px; text-transform:uppercase; }
+  label .req { color:var(--red); margin-right:3px; }
+
+  input, select, textarea {
+    background:var(--surface2);
+    border:1.5px solid var(--border);
+    border-radius:12px; padding:14px 18px;
+    color:var(--text); font-family:'Tajawal',sans-serif;
+    font-size:15px; font-weight:500; transition:all .3s;
+    width:100%; outline:none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px var(--gold-glow);
+    background:var(--surface3);
+  }
+  input::placeholder, textarea::placeholder { color:var(--text3); }
+  select option { background:var(--surface2); }
+  select:disabled { opacity:.4; cursor:not-allowed; }
+  textarea { resize:vertical; min-height:100px; }
+  input.error, select.error { border-color:var(--red) !important; }
+  .error-msg { color:var(--red); font-size:12px; margin-top:3px; display:none; }
+  .error-msg.show { display:block; }
+
+  /* ─── عرض المنطقة ─── */
+  .region-badge {
+    display:none; align-items:center; gap:10px;
+    background:var(--gold-glow); border:1px solid rgba(201,162,39,.3);
+    border-radius:10px; padding:10px 16px; margin-top:10px;
+    font-size:13px; font-weight:700; color:var(--gold2);
+  }
+  .region-badge.show { display:flex; }
+
+  /* ─── سعر التوصيل ─── */
+  .delivery-fee-box {
+    background:linear-gradient(135deg, rgba(201,162,39,.12), rgba(201,162,39,.05));
+    border:1.5px solid rgba(201,162,39,.35);
+    border-radius:14px; padding:16px 20px;
+    display:none; align-items:center; justify-content:space-between;
+    margin-top:14px;
+  }
+  .delivery-fee-box.show { display:flex; }
+  .delivery-fee-label { font-size:13px; color:var(--text2); font-weight:600; }
+  .delivery-fee-val { font-size:22px; font-weight:900; color:var(--gold2); }
+  .delivery-fee-cur { font-size:13px; color:var(--text2); margin-right:4px; }
+
+  /* ─── سعر الوحدة ─── */
+  .price-display {
+    background:var(--gold-glow); border:1.5px solid rgba(201,162,39,.4);
+    border-radius:12px; padding:14px 18px;
+    color:var(--gold2); font-size:20px; font-weight:900; text-align:center;
+  }
+  .price-display.empty {
+    background:var(--surface2); border-color:var(--border);
+    color:var(--text3); font-size:14px; font-weight:500;
+  }
+  .price-locked { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text3); margin-top:4px; }
+
+  /* ─── نوع الشاشة ─── */
+  .condition-tabs {
+    display:flex; gap:10px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:14px; padding:6px;
+  }
+  .cond-tab {
+    flex:1; padding:11px 10px; border-radius:10px; border:none;
+    background:transparent; color:var(--text2);
+    font-family:'Tajawal',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .3s; text-align:center;
+  }
+  .cond-tab.active {
+    background:var(--gold); color:var(--bg);
+    box-shadow:0 4px 16px var(--gold-glow);
+  }
+  .cond-tab:hover:not(.active) { background:var(--surface3); color:var(--text); }
+
+  /* ─── إجمالي ─── */
+  #live-total {
+    background:var(--gold-glow2); border:1px solid rgba(201,162,39,.25);
+    border-radius:14px; padding:18px; text-align:center;
+  }
+  #live-total .total-val { font-size:28px; font-weight:900; color:var(--gold2); }
+  #live-total .total-lbl { font-size:12px; color:var(--text3); margin-top:4px; }
+
+  /* ─── radio cards ─── */
+  .radio-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; }
+  .radio-card input[type=radio] { display:none; }
+  .radio-card label {
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:14px; padding:18px 10px; cursor:pointer; transition:all .3s;
+    text-align:center; text-transform:none; letter-spacing:0;
+    font-size:13px; color:var(--text); font-weight:600;
+  }
+  .radio-card label .icon { font-size:24px; }
+  .radio-card input[type=radio]:checked + label {
+    border-color:var(--gold); background:var(--gold-glow);
+    box-shadow:0 0 0 3px var(--gold-glow); color:var(--gold2);
+  }
+
+  /* ─── ملخص ─── */
+  .summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; margin-bottom:24px; }
+  .summary-item {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:13px; padding:14px 18px;
+  }
+  .summary-label { font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:.7px; margin-bottom:5px; }
+  .summary-value { font-size:14px; font-weight:700; }
+
+  .total-box {
+    background:linear-gradient(135deg, rgba(201,162,39,.15), rgba(201,162,39,.06));
+    border:1.5px solid var(--gold); border-radius:18px;
+    padding:22px 26px; display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:28px;
+  }
+  .total-label { font-size:15px; font-weight:700; color:var(--text2); }
+  .total-amount { font-size:36px; font-weight:900; color:var(--gold2); }
+  .total-currency { font-size:16px; }
+
+  /* ─── أزرار ─── */
+  .btn-row {
+    display:flex; gap:14px; padding:24px 42px;
+    background:var(--surface2); border-top:1px solid var(--border);
+  }
+  .btn {
+    flex:1; padding:16px 24px; border:none; border-radius:14px;
+    font-family:'Tajawal',sans-serif; font-size:15px; font-weight:800;
+    cursor:pointer; transition:all .3s; letter-spacing:.3px;
+  }
+  .btn-back {
+    background:transparent; border:1.5px solid var(--border2);
+    color:var(--text2); flex:0 0 auto; padding:16px 28px;
+  }
+  .btn-back:hover { border-color:var(--text2); color:var(--text); }
+  .btn-next {
+    background:linear-gradient(135deg, var(--gold), #e6b93d);
+    color:var(--bg); box-shadow:0 8px 28px rgba(201,162,39,.3);
+  }
+  .btn-next:hover { transform:translateY(-2px); box-shadow:0 14px 38px rgba(201,162,39,.45); }
+  .btn-submit { background:linear-gradient(135deg, var(--green), #16a34a); color:white; box-shadow:0 8px 28px rgba(34,197,94,.3); }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 14px 38px rgba(34,197,94,.4); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; transform:none !important; }
+
+  /* ─── نجاح ─── */
+  .success-screen { display:none; text-align:center; padding:64px 40px; animation:popIn .6s cubic-bezier(.175,.885,.32,1.275); }
+  @keyframes popIn { from{opacity:0;transform:scale(.8)} to{opacity:1;transform:scale(1)} }
+  .success-icon {
+    width:110px; height:110px;
+    background:linear-gradient(135deg, var(--green), #16a34a);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:55px; margin:0 auto 30px;
+    box-shadow:0 0 70px rgba(34,197,94,.45);
+  }
+  .success-title { font-size:34px; font-weight:900; margin-bottom:12px; }
+  .order-id-badge {
+    display:inline-block; background:var(--surface2);
+    border:1.5px solid var(--gold); border-radius:13px;
+    padding:12px 30px; font-size:22px; font-weight:900; color:var(--gold2);
+    letter-spacing:3px; margin:18px 0 26px; font-family:monospace;
+  }
+  .success-note { color:var(--text2); font-size:15px; line-height:1.9; }
+
+  /* ─── حركات ─── */
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-28px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(28px)}  to{opacity:1;transform:translateY(0)} }
+
+  @media(max-width:600px) {
+    .form-grid { grid-template-columns:1fr; }
+    .summary-grid { grid-template-columns:1fr; }
+    .section { padding:28px 20px; }
+    .btn-row { padding:20px; }
+    .condition-tabs { flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="grid-layer"></div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">جارٍ تحميل القائمة من الشيت…</div>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="logo-dot"></div>
+      <div class="logo-zr">ZR</div>
+      <div class="logo-dot"></div>
+    </div>
+    <h1>اطلب <em>جهازك</em> الآن</h1>
+    <p class="subtitle">أفضل أسعار الأجهزة في ليبيا · توصيل لجميع المدن</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress">
+    <div class="step active" id="step1">
+      <div class="step-num">١</div>
+      <div class="step-label">بياناتك</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2">
+      <div class="step-num">٢</div>
+      <div class="step-label">الجهاز</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3">
+      <div class="step-num">٣</div>
+      <div class="step-label">التأكيد</div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" id="error-banner">
+    ⚠️ تعذّر تحميل المنتجات من الشيت. تأكد من رابط Apps Script ثم أعد المحاولة.
+    <br><button class="retry-btn" onclick="fetchCatalog()">🔄 إعادة المحاولة</button>
+  </div>
+
+  <!-- Card -->
+  <div class="form-card">
+
+    <!-- ═══ القسم 1: بيانات العميل ═══ -->
+    <div class="section active" id="section-1">
+      <div class="section-header">
+        <div class="section-icon">👤</div>
+        <div>
+          <div class="section-title">بياناتك الشخصية</div>
+          <div class="section-desc">أدخل معلوماتك للتواصل وتسليم الطلب</div>
+        </div>
+      </div>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>الاسم الكامل <span class="req">*</span></label>
+          <input type="text" id="customer_name" placeholder="محمد أحمد…">
+          <span class="error-msg" id="err_name">الرجاء إدخال الاسم</span>
+        </div>
+
+        <div class="form-group">
+          <label>رقم الهاتف <span class="req">*</span></label>
+          <input type="tel" id="customer_phone" placeholder="09xxxxxxxx">
+          <span class="error-msg" id="err_phone">الرجاء إدخال رقم صحيح</span>
+        </div>
+
+        <div class="form-group full">
+          <label>العنوان التفصيلي <span class="req">*</span></label>
+          <input type="text" id="customer_address" placeholder="الحي، الشارع، رقم المبنى…">
+          <span class="error-msg" id="err_address">الرجاء إدخال العنوان</span>
+        </div>
+
+        <!-- المنطقة ثم المدينة -->
+        <div class="form-group">
+          <label>المنطقة <span class="req">*</span></label>
+          <select id="region_select" onchange="onRegionChange()">
+            <option value="">— اختر المنطقة —</option>
+            <option value="west_tripoli">غرب طرابلس</option>
+            <option value="east_tripoli">شرق طرابلس</option>
+            <option value="central">المنطقة الوسطى</option>
+            <option value="east">المنطقة الشرقية</option>
+            <option value="south_tripoli">جنوب طرابلس</option>
+            <option value="western_mountain">الجبل الغربي</option>
+            <option value="south_east">الجنوب الشرقي</option>
+            <option value="south_region">المنطقة الجنوبية</option>
+          </select>
+          <span class="error-msg" id="err_region">الرجاء اختيار المنطقة</span>
+        </div>
+
+        <div class="form-group">
+          <label>المدينة <span class="req">*</span></label>
+          <select id="customer_city" disabled onchange="onCityChange()">
+            <option value="">— اختر المدينة —</option>
+          </select>
+          <span class="error-msg" id="err_city">الرجاء اختيار المدينة</span>
+        </div>
+
+        <!-- سعر التوصيل -->
+        <div class="form-group full">
+          <div class="delivery-fee-box" id="delivery-fee-box">
+            <div class="delivery-fee-label">🚚 سعر توصيل هذه المدينة</div>
+            <div class="delivery-fee-val">
+              <span id="delivery-fee-val">0</span>
+              <span class="delivery-fee-cur">دينار</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ القسم 2: الجهاز ═══ -->
+    <div class="section" id="section-2">
+      <div class="section-header">
+        <div class="section-icon">📱</div>
+        <div>
+          <div class="section-title">تفاصيل الجهاز</div>
+          <div class="section-desc">اختر الفئة ثم الموديل وحالة البطارية</div>
+        </div>
+      </div>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>الفئة <span class="req">*</span></label>
+          <select id="product_category" onchange="onCategoryChange()">
+            <option value="">— اختر الفئة —</option>
+          </select>
+          <span class="error-msg" id="err_category">الرجاء اختيار الفئة</span>
+        </div>
+
+        <div class="form-group">
+          <label>الموديل <span class="req">*</span></label>
+          <select id="product_name" onchange="onProductChange()" disabled>
+            <option value="">— اختر الموديل —</option>
+          </select>
+          <span class="error-msg" id="err_product">الرجاء اختيار الموديل</span>
+        </div>
+
+        <!-- حالة البطارية -->
+        <div class="form-group full" id="condition-group" style="display:none">
+          <label>حالة البطارية <span class="req">*</span></label>
+          <div class="condition-tabs">
+            <button class="cond-tab" onclick="selectCondition('low')"   id="cond-low">70%–79%</button>
+            <button class="cond-tab" onclick="selectCondition('mid')"   id="cond-mid">80%–89%</button>
+            <button class="cond-tab" onclick="selectCondition('high')"  id="cond-high">90%–100%</button>
+          </div>
+          <span class="error-msg" id="err_condition">الرجاء اختيار حالة البطارية</span>
+        </div>
+
+        <!-- السعر -->
+        <div class="form-group">
+          <label>سعر الوحدة (دينار)</label>
+          <div class="price-display empty" id="unit_price_display">اختر الموديل أولاً</div>
+          <div class="price-locked">🔒 السعر محدد من الشيت</div>
+          <input type="hidden" id="unit_price" value="0">
+        </div>
+
+        <!-- الكمية -->
+        <div class="form-group">
+          <label>الكمية <span class="req">*</span></label>
+          <input type="number" id="quantity" placeholder="1" min="1" max="99" value="1" oninput="calcTotal()">
+        </div>
+
+        <!-- الإجمالي -->
+        <div class="form-group full">
+          <div id="live-total">
+            <div class="total-val" id="total-display">0</div>
+            <div class="total-lbl">الإجمالي (دينار ليبي)</div>
+          </div>
+        </div>
+
+        <!-- طريقة الدفع -->
+        <div class="form-group full">
+          <label>طريقة الدفع <span class="req">*</span></label>
+          <div class="radio-cards">
+            <div class="radio-card">
+              <input type="radio" name="payment" id="pay_cash" value="كاش عند الاستلام">
+              <label for="pay_cash"><span class="icon">💵</span>كاش عند الاستلام</label>
+            </div>
+            <div class="radio-card">
+              <input type="radio" name="payment" id="pay_transfer" value="تحويل بنكي">
+              <label for="pay_transfer"><span class="icon">🏦</span>تحويل بنكي</label>
+            </div>
+          </div>
+          <span class="error-msg" id="err_payment">الرجاء اختيار طريقة الدفع</span>
+        </div>
+
+        <!-- ملاحظات -->
+        <div class="form-group full">
+          <label>ملاحظات إضافية</label>
+          <textarea id="notes" placeholder="أي تفاصيل أو طلبات خاصة…"></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ القسم 3: المراجعة ═══ -->
+    <div class="section" id="section-3">
+      <div class="section-header">
+        <div class="section-icon">✅</div>
+        <div>
+          <div class="section-title">مراجعة الطلب</div>
+          <div class="section-desc">تأكد من البيانات قبل الإرسال</div>
+        </div>
+      </div>
+      <div class="summary-grid" id="summary-grid"></div>
+      <div class="total-box">
+        <div class="total-label">💰 المبلغ الإجمالي (شامل التوصيل)</div>
+        <div class="total-amount"><span id="final-total">0</span> <span class="total-currency">دينار</span></div>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✅</div>
+      <div class="success-title">تم استقبال طلبك بنجاح!</div>
+      <div class="order-id-badge" id="success-order-id">ORD-####</div>
+      <p class="success-note">شكراً لك! سيتواصل معك فريق ZR قريباً<br>لتأكيد الطلب وتفاصيل التسليم 🎉</p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row" id="btn-row">
+      <button class="btn btn-back" id="btn-back" onclick="prevStep()" style="display:none">→ رجوع</button>
+      <button class="btn btn-next" id="btn-next" onclick="nextStep()">التالي ←</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  ⚙️  الإعدادات — عدّل هنا فقط
+// ════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxezV50Dm-9rtU21oTvIG6TtUnT-46OqAvmUvN94-EfC44tH-Q4DXJw5WzPqTIdlYgZ/exec';
+const WEBHOOK_URL     = 'https://flowpilot818.app.n8n.cloud/webhook/order-form';
+// ════════════════════════════════════════════════
+
+// ─── بيانات المدن الليبية مع سعر التوصيل ───
+const CITIES = {
+  west_tripoli: {
+    label: 'غرب طرابلس',
+    cities: [
+      { name:'الماية',     fee:20 },
+      { name:'الزاوية',    fee:20 },
+      { name:'المطرد',     fee:20 },
+      { name:'صرمان',      fee:25 },
+      { name:'صبراتة',     fee:25 },
+      { name:'زوارة',      fee:25 },
+      { name:'العجيلات',   fee:30 },
+      { name:'الجميل',     fee:30 },
+      { name:'رقدالين',    fee:30 },
+      { name:'زلطن',       fee:30 },
+      { name:'رأس جدير',   fee:40 },
+    ]
+  },
+  east_tripoli: {
+    label: 'شرق طرابلس',
+    cities: [
+      { name:'القرة بولي',   fee:20 },
+      { name:'قصارطة',       fee:20 },
+      { name:'قصر خيار',     fee:20 },
+      { name:'الخمس',        fee:20 },
+      { name:'زليتن',        fee:20 },
+      { name:'مصراتة',       fee:20 },
+      { name:'مسلاتة',       fee:25 },
+    ]
+  },
+  central: {
+    label: 'المنطقة الوسطى',
+    cities: [
+      { name:'سرت',      fee:30 },
+      { name:'هراوة',    fee:30 },
+      { name:'بن جواد',  fee:30 },
+      { name:'النوفلية', fee:30 },
+      { name:'رأس لانوف',fee:30 },
+      { name:'البريقة',  fee:30 },
+      { name:'العقيلة',  fee:30 },
+      { name:'اجدابيا',  fee:30 },
+      { name:'هون',      fee:35 },
+      { name:'سوكنة',    fee:35 },
+      { name:'ودان',     fee:35 },
+      { name:'الجفرة',   fee:35 },
+      { name:'زلة',      fee:40 },
+    ]
+  },
+  east: {
+    label: 'المنطقة الشرقية',
+    cities: [
+      { name:'بنغازي',   fee:30 },
+      { name:'توكرة',    fee:35 },
+      { name:'المرج',    fee:35 },
+      { name:'الأبيار',  fee:35 },
+      { name:'البيضاء',  fee:35 },
+      { name:'قمينس',    fee:40 },
+      { name:'سلوق',     fee:40 },
+      { name:'شحات',     fee:40 },
+      { name:'سوسة',     fee:40 },
+      { name:'درنة',     fee:40 },
+      { name:'القبة',    fee:40 },
+      { name:'طبرق',     fee:40 },
+      { name:'امساعد',   fee:50 },
+    ]
+  },
+  south_tripoli: {
+    label: 'جنوب طرابلس',
+    cities: [
+      { name:'ترهونة',   fee:30 },
+      { name:'بني وليد', fee:30 },
+    ]
+  },
+  western_mountain: {
+    label: 'الجبل الغربي',
+    cities: [
+      { name:'غريان',         fee:25 },
+      { name:'الأصابعة',      fee:35 },
+      { name:'الرابطة',       fee:35 },
+      { name:'القواليش',      fee:35 },
+      { name:'العوينية',      fee:35 },
+      { name:'القلعة / يفرن', fee:35 },
+      { name:'كَكلة',         fee:35 },
+      { name:'الرياينة',      fee:35 },
+      { name:'الرجبان / الزنتان', fee:35 },
+      { name:'الرحيبات',      fee:40 },
+      { name:'جادو',          fee:40 },
+      { name:'كابو',          fee:40 },
+      { name:'الرقيعات',      fee:40 },
+      { name:'تيجي',          fee:45 },
+      { name:'بدر',           fee:45 },
+      { name:'الجوش',         fee:45 },
+    ]
+  },
+  south_east: {
+    label: 'الجنوب الشرقي',
+    cities: [
+      { name:'جالو',    fee:50 },
+      { name:'أوجلة',   fee:50 },
+      { name:'الواحات', fee:50 },
+      { name:'الكفرة',  fee:50 },
+    ]
+  },
+  south_region: {
+    label: 'المنطقة الجنوبية',
+    cities: [
+      { name:'سبها',       fee:35 },
+      { name:'مرزة',       fee:35 },
+      { name:'الشويرف',    fee:35 },
+      { name:'الفريات',    fee:35 },
+      { name:'براك الشاطئ',fee:40 },
+      { name:'أوباري',     fee:45 },
+      { name:'أم الأرانب', fee:45 },
+      { name:'وادي عتبة',  fee:45 },
+      { name:'مرزق',       fee:45 },
+      { name:'تراغن',      fee:45 },
+      { name:'القطرون',    fee:45 },
+      { name:'غات',        fee:50 },
+    ]
+  }
+};
+
+// ─── متغيرات الحالة ───
+let catalog       = {};
+let currentStep   = 1;
+const totalSteps  = 3;
+let selectedCondition = '';
+let currentProductPrices = {};
+let deliveryFee   = 0;
+
+// ═══ جلب الكاتالوج من الشيت — JSONP (يحل مشكلة CORS) ═══
+function fetchCatalog() {
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  document.getElementById('error-banner').classList.remove('show');
+
+  // حذف أي سكريبت قديم
+  const old = document.getElementById('jsonp-script');
+  if (old) old.remove();
+
+  // timeout — إذا لم يرد الشيت خلال 10 ثواني
+  const timer = setTimeout(() => {
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('error-banner').classList.add('show');
+  }, 10000);
+
+  // callback عالمي تستدعيه Apps Script
+  window.__catalogCallback = function(data) {
+    clearTimeout(timer);
+    const s = document.getElementById('jsonp-script');
+    if (s) s.remove();
+    if (data && data.success) {
+      catalog = data.catalog;
+      buildCategorySelect();
+      document.getElementById('loading-overlay').classList.add('hidden');
+    } else {
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('error-banner').classList.add('show');
+    }
+  };
+
+  // إضافة script tag مع callback
+  const script = document.createElement('script');
+  script.id  = 'jsonp-script';
+  script.src = APPS_SCRIPT_URL + '?callback=__catalogCallback';
+  script.onerror = () => {
+    clearTimeout(timer);
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('error-banner').classList.add('show');
+  };
+  document.head.appendChild(script);
+}
+
+function buildCategorySelect() {
+  const sel = document.getElementById('product_category');
+  sel.innerHTML = '<option value="">— اختر الفئة —</option>';
+  Object.entries(catalog).forEach(([key, val]) => {
+    const opt = document.createElement('option');
+    opt.value = key; opt.textContent = val.name;
+    sel.appendChild(opt);
+  });
+}
+
+// ═══ المنطقة والمدينة ═══
+function onRegionChange() {
+  const regionKey = document.getElementById('region_select').value;
+  const citySelect = document.getElementById('customer_city');
+  citySelect.innerHTML = '<option value="">— اختر المدينة —</option>';
+  document.getElementById('delivery-fee-box').classList.remove('show');
+  deliveryFee = 0;
+
+  if (regionKey && CITIES[regionKey]) {
+    CITIES[regionKey].cities.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.name;
+      opt.dataset.fee = c.fee;
+      opt.textContent = c.name;
+      citySelect.appendChild(opt);
+    });
+    citySelect.disabled = false;
+  } else {
+    citySelect.disabled = true;
+  }
+}
+
+function onCityChange() {
+  const citySelect = document.getElementById('customer_city');
+  const selected   = citySelect.options[citySelect.selectedIndex];
+  if (selected && selected.dataset.fee) {
+    deliveryFee = parseInt(selected.dataset.fee);
+    document.getElementById('delivery-fee-val').textContent = deliveryFee;
+    document.getElementById('delivery-fee-box').classList.add('show');
+  } else {
+    deliveryFee = 0;
+    document.getElementById('delivery-fee-box').classList.remove('show');
+  }
+}
+
+// ═══ الكاتالوج ═══
+function onCategoryChange() {
+  const catKey  = document.getElementById('product_category').value;
+  const prodSel = document.getElementById('product_name');
+  prodSel.innerHTML = '<option value="">— اختر الموديل —</option>';
+  resetPriceDisplay();
+  document.getElementById('condition-group').style.display = 'none';
+  selectedCondition = '';
+  currentProductPrices = {};
+
+  if (catKey && catalog[catKey]) {
+    catalog[catKey].products.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.name;
+      // نخزن الأسعار كـ JSON في dataset
+      opt.dataset.prices = JSON.stringify({ low: p.price_low, mid: p.price_mid, high: p.price_high, single: p.price });
+      opt.textContent = p.name;
+      prodSel.appendChild(opt);
+    });
+    prodSel.disabled = false;
+  } else {
+    prodSel.disabled = true;
+  }
+}
+
+function onProductChange() {
+  const prodSel = document.getElementById('product_name');
+  const selected = prodSel.options[prodSel.selectedIndex];
+  resetPriceDisplay();
+  selectedCondition = '';
+  resetConditionTabs();
+
+  if (selected && selected.dataset.prices) {
+    try {
+      currentProductPrices = JSON.parse(selected.dataset.prices);
+    } catch { currentProductPrices = {}; }
+
+    // إذا فيه أسعار متعددة (low/mid/high) نظهر التابز
+    if (currentProductPrices.low || currentProductPrices.mid || currentProductPrices.high) {
+      document.getElementById('condition-group').style.display = 'block';
+    } else if (currentProductPrices.single) {
+      // سعر واحد — نعرضه مباشرة
+      document.getElementById('condition-group').style.display = 'none';
+      setPrice(currentProductPrices.single);
+    }
+  } else {
+    document.getElementById('condition-group').style.display = 'none';
+  }
+}
+
+function selectCondition(cond) {
+  selectedCondition = cond;
+  resetConditionTabs();
+  document.getElementById('cond-' + cond).classList.add('active');
+
+  const priceMap = { low: currentProductPrices.low, mid: currentProductPrices.mid, high: currentProductPrices.high };
+  const price = priceMap[cond];
+  if (price && price !== '-' && price !== null) {
+    setPrice(price);
+  } else {
+    resetPriceDisplay();
+    document.getElementById('unit_price_display').textContent = 'غير متوفر لهذه الفئة';
+    document.getElementById('unit_price').value = '0';
+  }
+}
+
+function resetConditionTabs() {
+  ['low','mid','high'].forEach(c => document.getElementById('cond-'+c).classList.remove('active'));
+}
+
+function setPrice(price) {
+  const p = parseFloat(price) || 0;
+  document.getElementById('unit_price').value = p;
+  const disp = document.getElementById('unit_price_display');
+  disp.textContent = p.toLocaleString('ar-LY') + ' دينار';
+  disp.className = 'price-display';
+  calcTotal();
+}
+
+function resetPriceDisplay() {
+  document.getElementById('unit_price').value = '0';
+  const disp = document.getElementById('unit_price_display');
+  disp.textContent = 'اختر الموديل أولاً';
+  disp.className = 'price-display empty';
+  document.getElementById('total-display').textContent = '0';
+}
+
+function calcTotal() {
+  const qty   = parseFloat(document.getElementById('quantity').value) || 0;
+  const price = parseFloat(document.getElementById('unit_price').value) || 0;
+  document.getElementById('total-display').textContent = (qty * price).toLocaleString('ar-LY');
+}
+
+// ═══ Validation ═══
+function validateStep(step) {
+  let valid = true;
+  const showErr = (elId, errId) => {
+    document.getElementById(elId)?.classList.add('error');
+    document.getElementById(errId).classList.add('show');
+    valid = false;
+  };
+  const clearErr = (elId, errId) => {
+    document.getElementById(elId)?.classList.remove('error');
+    document.getElementById(errId).classList.remove('show');
+  };
+
+  if (step === 1) {
+    clearErr('customer_name','err_name');
+    clearErr('customer_phone','err_phone');
+    clearErr('customer_address','err_address');
+    clearErr('region_select','err_region');
+    clearErr('customer_city','err_city');
+
+    if (!document.getElementById('customer_name').value.trim()) showErr('customer_name','err_name');
+    const ph = document.getElementById('customer_phone').value.trim();
+    if (!ph || !/^[0-9+\s\-]{7,15}$/.test(ph)) showErr('customer_phone','err_phone');
+    if (!document.getElementById('customer_address').value.trim()) showErr('customer_address','err_address');
+    if (!document.getElementById('region_select').value) showErr('region_select','err_region');
+    if (!document.getElementById('customer_city').value) showErr('customer_city','err_city');
+  }
+
+  if (step === 2) {
+    ['product_category','product_name'].forEach(id => document.getElementById(id).classList.remove('error'));
+    ['err_category','err_product','err_condition','err_payment'].forEach(id => document.getElementById(id).classList.remove('show'));
+
+    if (!document.getElementById('product_category').value) showErr('product_category','err_category');
+    if (!document.getElementById('product_name').value) showErr('product_name','err_product');
+
+    // تحقق من حالة البطارية فقط إذا التابز ظاهرة
+    const condGroup = document.getElementById('condition-group');
+    if (condGroup.style.display !== 'none' && !selectedCondition) {
+      document.getElementById('err_condition').classList.add('show');
+      valid = false;
+    }
+    if (!document.querySelector('input[name="payment"]:checked')) {
+      document.getElementById('err_payment').classList.add('show');
+      valid = false;
+    }
+  }
+  return valid;
+}
+
+// ═══ ملخص ═══
+function buildSummary() {
+  const get = id => document.getElementById(id).value;
+  const payment = document.querySelector('input[name="payment"]:checked')?.value || '';
+  const qty     = parseFloat(get('quantity')) || 0;
+  const price   = parseFloat(get('unit_price')) || 0;
+  const subtotal= qty * price;
+  const grandTotal = subtotal + deliveryFee;
+  const catKey  = get('product_category');
+  const catName = catalog[catKey]?.name || catKey;
+  const condLabel = { low:'70%–79%', mid:'80%–89%', high:'90%–100%', '':'' }[selectedCondition] || '';
+  const regionKey = document.getElementById('region_select').value;
+  const regionLabel = CITIES[regionKey]?.label || '';
+
+  document.getElementById('final-total').textContent = grandTotal.toLocaleString('ar-LY');
+
+  const items = [
+    { l:'الاسم',            v: get('customer_name') },
+    { l:'الهاتف',           v: get('customer_phone') },
+    { l:'المنطقة',          v: regionLabel },
+    { l:'المدينة',          v: get('customer_city') },
+    { l:'العنوان',          v: get('customer_address') },
+    { l:'الفئة',            v: catName },
+    { l:'الموديل',          v: get('product_name') },
+    { l:'حالة البطارية',    v: condLabel || 'سعر موحد' },
+    { l:'سعر الوحدة',       v: price.toLocaleString('ar-LY') + ' دينار' },
+    { l:'الكمية',           v: qty },
+    { l:'سعر التوصيل',      v: deliveryFee + ' دينار' },
+    { l:'طريقة الدفع',      v: payment },
+    { l:'الملاحظات',        v: get('notes') || 'لا يوجد' },
+  ];
+  document.getElementById('summary-grid').innerHTML =
+    items.map(i => `<div class="summary-item"><div class="summary-label">${i.l}</div><div class="summary-value">${i.v}</div></div>`).join('');
+}
+
+// ═══ Navigation ═══
+function nextStep() {
+  if (currentStep < totalSteps) {
+    if (!validateStep(currentStep)) return;
+    if (currentStep === 2) buildSummary();
+    currentStep++; updateUI();
+  } else {
+    submitOrder();
+  }
+}
+function prevStep() {
+  if (currentStep > 1) { currentStep--; updateUI(); }
+}
+function updateUI() {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + currentStep).classList.add('active');
+  for (let i = 1; i <= totalSteps; i++) {
+    const s = document.getElementById('step' + i);
+    s.classList.remove('active','done');
+    if (i < currentStep) s.classList.add('done');
+    else if (i === currentStep) s.classList.add('active');
+    if (i < totalSteps) document.getElementById('line' + i).classList.toggle('done', i < currentStep);
+  }
+  document.getElementById('btn-back').style.display = currentStep > 1 ? 'block' : 'none';
+  const nb = document.getElementById('btn-next');
+  if (currentStep === totalSteps) { nb.textContent = '✅ تأكيد وإرسال الطلب'; nb.className = 'btn btn-submit'; }
+  else { nb.textContent = 'التالي ←'; nb.className = 'btn btn-next'; }
+}
+
+// ═══ الإرسال ═══
+async function submitOrder() {
+  const btn = document.getElementById('btn-next');
+  btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
+  const get = id => document.getElementById(id).value;
+  const qty   = parseFloat(get('quantity')) || 0;
+  const price = parseFloat(get('unit_price')) || 0;
+  const condLabel = { low:'70%–79%', mid:'80%–89%', high:'90%–100%', '':'' }[selectedCondition] || 'سعر موحد';
+  const regionKey = document.getElementById('region_select').value;
+  const regionLabel = CITIES[regionKey]?.label || '';
+
+  const payload = {
+    customer_name    : get('customer_name'),
+    customer_phone   : get('customer_phone'),
+    customer_address : get('customer_address'),
+    region           : regionLabel,
+    customer_city    : get('customer_city'),
+    delivery_fee     : deliveryFee,
+    product_category : catalog[get('product_category')]?.name || get('product_category'),
+    product_name     : get('product_name'),
+    battery_condition: condLabel,
+    quantity         : qty,
+    unit_price       : price,
+    subtotal         : qty * price,
+    grand_total      : qty * price + deliveryFee,
+    payment_method   : document.querySelector('input[name="payment"]:checked')?.value || '',
+    notes            : get('notes'),
+  };
+  try {
+    const res  = await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const data = await res.json();
+    showSuccess(data.order_id || 'ORD-XXXX');
+  } catch {
+    showSuccess('ORD-' + Math.floor(Math.random()*90000+10000));
+  }
+}
+
+function showSuccess(orderId) {
+  document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+  document.getElementById('btn-row').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+  document.getElementById('success-order-id').textContent = orderId;
+  document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.classList.add('done'); });
+  document.querySelectorAll('.step-line').forEach(l => l.classList.add('done'));
+}
+
+// ═══ تشغيل ═══
+fetchCatalog();
+</script>
+</body>
+</html>
